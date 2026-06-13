@@ -1,0 +1,44 @@
+name: Deploy Laravel ZassMarket
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+#########
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy Laravel files
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.DO_SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.DO_HOST }}
+          REMOTE_USER: ${{ secrets.DO_USER }}
+          SOURCE: "./"
+          TARGET: "/var/www/html/zassmarket"
+          EXCLUDE: "/.git/, /.github/, /node_modules/, /vendor/, /storage/logs/, /ai-service/"
+
+      - name: Run Laravel deployment commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/html/zassmarket
+            composer install --no-dev --optimize-autoloader
+            npm install
+            npm run build
+            php artisan migrate --force
+            php artisan storage:link || true
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            sudo chown -R deployer:www-data /var/www/html/zassmarket
+            sudo chmod -R 775 storage bootstrap/cache
+            sudo systemctl reload php8.3-fpm
+            sudo systemctl reload nginx
