@@ -17,11 +17,20 @@
                     <path d="M5 21V7l8-4v18" />
                     <path d="M19 21V11l-6-4" />
                 </svg>
-                {{ $product->vendorStore->name }}
+                <a href="{{ route('vendors.show', $product->vendorStore->slug) }}" class="hover:text-zass-bark">{{ $product->vendorStore->name }}</a>
+            </p>
+            <p class="mt-2 text-xs font-bold text-zass-caramel">
+                {{ $product->reviews_count ? number_format((float) $product->reviews_avg_rating, 1).' rating from '.$product->reviews_count.' review'.($product->reviews_count === 1 ? '' : 's') : 'No ratings yet' }}
             </p>
         </div>
         <div class="flex items-center justify-between">
-            <span class="text-lg font-black text-zass-bark">{{ $product->formattedPrice() }}</span>
+            <span>
+                <span class="block text-lg font-black text-zass-bark">{{ $product->formattedPrice() }}</span>
+                @if ($product->hasDiscount())
+                    <span class="text-xs font-black text-zass-stone line-through">{{ $product->formattedOriginalPrice() }}</span>
+                    <span class="ml-1 text-xs font-black text-zass-caramel">{{ $product->discount_percent }}% off</span>
+                @endif
+            </span>
             <form method="POST" action="{{ route('cart.store', $product) }}">
                 @csrf
                 <button class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-zass-bark text-white shadow-sm transition hover:bg-zass-ink" title="Add to cart">

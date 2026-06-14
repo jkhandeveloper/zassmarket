@@ -34,4 +34,20 @@
     .zm-icon {
         @apply h-5 w-5 shrink-0;
     }
+
+    .zm-star-input {
+        @apply flex flex-wrap gap-2;
+    }
+
+    .zm-star-input input {
+        @apply sr-only;
+    }
+
+    .zm-star-input label {
+        @apply inline-flex min-h-10 cursor-pointer items-center gap-0.5 rounded-md border border-zass-linen bg-white px-3 py-2 text-zass-stone shadow-sm transition hover:border-zass-caramel hover:text-zass-caramel;
+    }
+
+    .zm-star-input input:checked + label {
+        @apply border-zass-caramel bg-zass-caramel/15 text-zass-caramel ring-2 ring-zass-caramel/25;
+    }
 }

@@ -37,6 +37,7 @@ class ProductResource extends Resource
             TextInput::make('name')->required()->maxLength(255),
             TextInput::make('slug')->required()->maxLength(255),
             TextInput::make('price_cents')->numeric()->required(),
+            TextInput::make('discount_percent')->numeric()->minValue(0)->maxValue(95)->default(0),
             TextInput::make('stock')->numeric()->required(),
             Toggle::make('is_active')->default(true),
             Textarea::make('description')->columnSpanFull(),
@@ -55,6 +56,7 @@ class ProductResource extends Resource
                 TextColumn::make('category.name')->label('Category'),
                 TextColumn::make('seo_title')->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('price_cents')->money('USD', divideBy: 100)->sortable(),
+                TextColumn::make('discount_percent')->suffix('%')->sortable(),
                 TextColumn::make('stock')->sortable(),
                 IconColumn::make('is_active')->boolean(),
             ])

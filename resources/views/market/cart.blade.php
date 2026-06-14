@@ -10,6 +10,11 @@
                     <div>
                         <h2 class="font-black">{{ $item['product']->name }}</h2>
                         <p class="text-sm font-semibold text-zass-sage">{{ $item['product']->vendorStore->name }} - {{ $item['product']->formattedPrice() }}</p>
+                        @if ($item['product']->hasDiscount())
+                            <p class="mt-1 text-xs font-black text-zass-caramel">
+                                {{ $item['product']->discount_percent }}% off <span class="text-zass-stone line-through">{{ $item['product']->formattedOriginalPrice() }}</span>
+                            </p>
+                        @endif
                     </div>
                     <div class="flex items-center gap-3">
                         <form method="POST" action="{{ route('cart.update', $item['product']) }}" class="flex items-center gap-2">

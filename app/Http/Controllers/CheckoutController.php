@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\CartService;
+use App\Services\Notifications\MarketplaceEmailService;
 use App\Services\StripeCheckoutService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -31,7 +32,7 @@ class CheckoutController extends Controller
         ]);
     }
 
-    public function store(Request $request, StripeCheckoutService $stripe): RedirectResponse
+    public function store(Request $request, StripeCheckoutService $stripe, MarketplaceEmailService $emails): RedirectResponse
     {
         $items = $this->cart->items();
 
@@ -95,9 +96,9 @@ class CheckoutController extends Controller
                         $order->items()->create([
                             'product_id' => $product->id,
                             'product_name' => $product->name,
-                            'unit_price_cents' => $product->price_cents,
+                            'unit_price_cents' => $product->currentPriceCents(),
                             'quantity' => $quantity,
-                            'total_cents' => $product->price_cents * $quantity,
+                            'total_cents' => $product->currentPriceCents() * $quantity,
                         ]);
 
                         $product->decrement('stock', min($quantity, $product->stock));
@@ -129,11 +130,12 @@ class CheckoutController extends Controller
         }
 
         $this->cart->clear();
+        $orders->each(fn (Order $order) => $emails->orderPlaced($order));
 
         return redirect()->route('checkout.thank-you')->with('orders', $orders->pluck('order_number')->all());
     }
 
-    public function cardSuccess(Request $request, StripeCheckoutService $stripe): RedirectResponse
+    public function cardSuccess(Request $request, StripeCheckoutService $stripe, MarketplaceEmailService $emails): RedirectResponse
     {
         $sessionId = $request->query('session_id');
 
@@ -155,6 +157,7 @@ class CheckoutController extends Controller
         ]);
 
         $this->cart->clear();
+        $orders->each(fn (Order $order) => $emails->orderPlaced($order));
 
         return redirect()->route('checkout.thank-you')->with('orders', $orders->pluck('order_number')->all());
     }

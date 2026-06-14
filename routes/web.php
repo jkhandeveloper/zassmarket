@@ -7,13 +7,17 @@ use App\Http\Controllers\CustomerDashboardController;
 use App\Http\Controllers\DashboardRedirectController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Reviews\ProductReviewController;
+use App\Http\Controllers\Reviews\VendorReviewController;
 use App\Http\Controllers\VendorBillingController;
 use App\Http\Controllers\VendorDashboardController;
+use App\Http\Controllers\VendorStoreController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
 Route::get('/products', [HomeController::class, 'products'])->name('products.index');
 Route::get('/products/{product:slug}', [HomeController::class, 'showProduct'])->name('products.show');
+Route::get('/vendors/{vendorStore:slug}', [VendorStoreController::class, 'show'])->name('vendors.show');
 Route::get('/pages/{page:slug}', [HomeController::class, 'page'])->name('pages.show');
 
 Route::get('/test-ai', [ProductImageAnalysisController::class, 'create'])->name('ai.product-image.create');
@@ -39,6 +43,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/customer', [CustomerDashboardController::class, 'index'])->name('customer.dashboard');
     Route::get('/customer/wishlist', [CustomerDashboardController::class, 'wishlist'])->name('customer.wishlist');
     Route::post('/wishlist/{product}', [CustomerDashboardController::class, 'toggleWishlist'])->name('wishlist.toggle');
+    Route::post('/products/{product}/reviews', [ProductReviewController::class, 'store'])->name('products.reviews.store');
+    Route::post('/vendors/{vendorStore}/reviews', [VendorReviewController::class, 'store'])->name('vendors.reviews.store');
 
     Route::get('/vendor/apply', [VendorDashboardController::class, 'apply'])->name('vendor.apply');
     Route::post('/vendor/apply', [VendorDashboardController::class, 'storeApplication'])->name('vendor.apply.store');

@@ -21,9 +21,22 @@
                     <path d="M5 21V7l8-4v18" />
                     <path d="M19 21V11l-6-4" />
                 </svg>
-                Sold by {{ $product->vendorStore->name }}
+                Sold by <a href="{{ route('vendors.show', $product->vendorStore->slug) }}" class="text-zass-bark hover:text-zass-ink">{{ $product->vendorStore->name }}</a>
             </p>
-            <p class="mt-7 text-4xl font-black text-zass-bark">{{ $product->formattedPrice() }}</p>
+            <div class="mt-5">
+                <div class="rounded-md border border-zass-linen bg-zass-cream/70 p-4">
+                    <p class="text-xs font-bold uppercase tracking-wide text-zass-sage">Product rating</p>
+                    <p class="mt-1 text-2xl font-black text-zass-bark">{{ $product->ratingLabel() }}</p>
+                    <p class="text-sm font-semibold text-zass-bark/70">{{ $product->reviews_count }} review{{ $product->reviews_count === 1 ? '' : 's' }}</p>
+                </div>
+            </div>
+            <div class="mt-7 flex flex-wrap items-end gap-3">
+                <p class="text-4xl font-black text-zass-bark">{{ $product->formattedPrice() }}</p>
+                @if ($product->hasDiscount())
+                    <p class="pb-1 text-lg font-black text-zass-stone line-through">{{ $product->formattedOriginalPrice() }}</p>
+                    <span class="mb-1 rounded-md bg-zass-caramel/20 px-2.5 py-1 text-sm font-black text-zass-bark">{{ $product->discount_percent }}% off</span>
+                @endif
+            </div>
             <p class="mt-6 whitespace-pre-line leading-8 text-zass-bark/80">{{ $product->description }}</p>
             <form method="POST" action="{{ route('cart.store', $product) }}" class="mt-8 flex gap-3">
                 @csrf
@@ -51,6 +64,34 @@
         </div>
     </section>
 
+    @if ($sameNameProducts->isNotEmpty())
+        <section class="zm-container pb-12">
+            <div class="mb-6">
+                <p class="zm-pill">Same product name</p>
+                <h2 class="mt-3 text-3xl font-black">More listings named {{ $product->name }}</h2>
+            </div>
+            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ($sameNameProducts as $sameNameProduct)
+                    @include('market.partials.product-card', ['product' => $sameNameProduct])
+                @endforeach
+            </div>
+        </section>
+    @endif
+
+    @if ($sameCategoryProducts->isNotEmpty())
+        <section class="zm-container pb-12">
+            <div class="mb-6">
+                <p class="zm-pill">Same category</p>
+                <h2 class="mt-3 text-3xl font-black">More from {{ $product->category?->name ?? 'this category' }}</h2>
+            </div>
+            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ($sameCategoryProducts as $sameCategoryProduct)
+                    @include('market.partials.product-card', ['product' => $sameCategoryProduct])
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     @if ($recommendedProducts->isNotEmpty())
         <section class="zm-container pb-12">
             <div class="mb-6">
@@ -64,4 +105,55 @@
             </div>
         </section>
     @endif
+
+    <section class="zm-container max-w-4xl pb-14">
+        <div>
+            <div class="mb-4">
+                <p class="zm-pill">Product reviews</p>
+                <h2 class="mt-3 text-2xl font-black">What customers and vendors say about this product</h2>
+            </div>
+
+            @auth
+                <form method="POST" action="{{ route('products.reviews.store', $product) }}" class="rounded-md border border-zass-linen bg-white/85 p-5 shadow-soft">
+                    @csrf
+                    <div class="grid gap-4">
+                        <div class="grid gap-2 text-sm font-bold">
+                            <span>Rating</span>
+                            @include('market.partials.rating-input', ['id' => 'product-rating'])
+                        </div>
+                        <label class="grid gap-1 text-sm font-bold">Title
+                            <input name="title" value="{{ old('title') }}" maxlength="120" class="rounded-md border-zass-linen focus:border-zass-caramel focus:ring-zass-caramel">
+                        </label>
+                        <label class="grid gap-1 text-sm font-bold">Review
+                            <textarea name="body" rows="4" maxlength="1500" class="rounded-md border-zass-linen focus:border-zass-caramel focus:ring-zass-caramel">{{ old('body') }}</textarea>
+                        </label>
+                    </div>
+                    <button class="zm-btn-primary mt-4">Save product review</button>
+                </form>
+            @else
+                <p class="rounded-md border border-zass-linen bg-white/80 p-5 text-sm font-semibold text-zass-bark/75">
+                    <a href="{{ route('login') }}" class="font-black text-zass-bark hover:text-zass-ink">Log in</a> to rate and review this product.
+                </p>
+            @endauth
+
+            <div class="mt-5 space-y-4">
+                @forelse ($productReviews as $review)
+                    <article class="rounded-md border border-zass-linen bg-white/85 p-5 shadow-soft">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <p class="font-black">{{ $review->title ?: 'Product review' }}</p>
+                                <p class="mt-1 text-sm font-semibold text-zass-sage">{{ $review->user?->name ?? 'Customer' }}</p>
+                            </div>
+                            <span class="rounded-md bg-zass-caramel/20 px-2.5 py-1 text-sm font-black text-zass-bark">{{ $review->rating }}/5</span>
+                        </div>
+                        @if ($review->body)
+                            <p class="mt-3 whitespace-pre-line text-sm leading-6 text-zass-bark/80">{{ $review->body }}</p>
+                        @endif
+                    </article>
+                @empty
+                    <p class="rounded-md border border-zass-linen bg-white/80 p-5 text-sm text-zass-bark/75">No product reviews yet.</p>
+                @endforelse
+            </div>
+        </div>
+    </section>
 @endsection

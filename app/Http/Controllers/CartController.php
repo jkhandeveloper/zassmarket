@@ -29,8 +29,16 @@ class CartController extends Controller
         ]);
 
         $this->cart->add($product, $data['quantity'] ?? 1);
+        $cartCount = $this->cart->count();
 
-        return back()->with('status', 'Product added to cart.');
+        return back()
+            ->with('status', "{$product->name} added to cart. {$this->cartCountLabel($cartCount)}")
+            ->with('notification', [
+                'message' => "{$product->name} added to cart.",
+                'meta' => $this->cartCountLabel($cartCount),
+                'action_label' => 'View cart',
+                'action_url' => route('cart.index'),
+            ]);
     }
 
     public function update(Request $request, Product $product): RedirectResponse
@@ -40,14 +48,37 @@ class CartController extends Controller
         ]);
 
         $this->cart->update($product, $data['quantity']);
+        $cartCount = $this->cart->count();
 
-        return back()->with('status', 'Cart updated.');
+        return back()
+            ->with('status', "Cart updated. {$this->cartCountLabel($cartCount)}")
+            ->with('notification', [
+                'message' => 'Cart updated.',
+                'meta' => $this->cartCountLabel($cartCount),
+                'action_label' => $cartCount > 0 ? 'Checkout' : 'Shop products',
+                'action_url' => $cartCount > 0 ? route('checkout.create') : route('products.index'),
+            ]);
     }
 
     public function destroy(Product $product): RedirectResponse
     {
         $this->cart->remove($product);
+        $cartCount = $this->cart->count();
 
-        return back()->with('status', 'Product removed from cart.');
+        return back()
+            ->with('status', "{$product->name} removed from cart. {$this->cartCountLabel($cartCount)}")
+            ->with('notification', [
+                'message' => "{$product->name} removed from cart.",
+                'meta' => $this->cartCountLabel($cartCount),
+                'action_label' => $cartCount > 0 ? 'Checkout' : 'Shop products',
+                'action_url' => $cartCount > 0 ? route('checkout.create') : route('products.index'),
+            ]);
+    }
+
+    private function cartCountLabel(int $cartCount): string
+    {
+        return $cartCount === 1
+            ? '1 product in your cart.'
+            : "{$cartCount} products in your cart.";
     }
 }

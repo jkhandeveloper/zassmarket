@@ -42,6 +42,7 @@ class VendorStoreResource extends Resource
             ])->required(),
             TextInput::make('support_email')->email()->maxLength(255),
             TextInput::make('phone')->maxLength(40),
+            TextInput::make('logo_path')->maxLength(255),
             DateTimePicker::make('approved_at'),
             Textarea::make('description')->columnSpanFull(),
         ]);

@@ -29,7 +29,7 @@ class CartService
                 return [
                     'product' => $product,
                     'quantity' => $quantity,
-                    'subtotal_cents' => $product->price_cents * $quantity,
+                    'subtotal_cents' => $product->currentPriceCents() * $quantity,
                 ];
             })
             ->filter()
@@ -77,6 +77,6 @@ class CartService
 
     public function count(): int
     {
-        return $this->items()->sum('quantity');
+        return collect(Session::get(self::SESSION_KEY, []))->sum();
     }
 }

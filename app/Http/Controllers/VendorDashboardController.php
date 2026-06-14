@@ -9,8 +9,10 @@ use App\Models\VendorStore;
 use App\Models\VendorSubscription;
 use App\Services\AiSuggestionService;
 use App\Services\BankTransferDetailsService;
+use App\Services\Notifications\MarketplaceEmailService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -35,7 +37,7 @@ class VendorDashboardController extends Controller
         ]);
     }
 
-    public function storeApplication(Request $request, BankTransferDetailsService $bankDetails): RedirectResponse
+    public function storeApplication(Request $request, BankTransferDetailsService $bankDetails, MarketplaceEmailService $emails): RedirectResponse
     {
         abort_if(auth()->user()->vendorStore, 409, 'You already have a vendor application.');
 
@@ -45,12 +47,14 @@ class VendorDashboardController extends Controller
             'support_email' => ['required', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:40'],
             'description' => ['nullable', 'string', 'max:2000'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         $store = VendorStore::create([
-            ...$data,
+            ...collect($data)->except('logo')->all(),
             'owner_id' => auth()->id(),
             'slug' => Str::slug($data['name']).'-'.Str::lower(Str::random(5)),
+            'logo_path' => $this->storePublicImage($request, 'logo', 'vendor-logos'),
         ]);
 
         $subscription = VendorSubscription::create([
@@ -63,6 +67,7 @@ class VendorDashboardController extends Controller
 
         auth()->user()->assignRole('vendor');
         $bankDetails->emailTo(auth()->user()->email, $subscription->plan);
+        $emails->vendorRegistered($store);
 
         return redirect()->route('vendor.billing.index')->with('status', 'Vendor application submitted. Please complete your subscription payment.');
     }
@@ -91,7 +96,7 @@ class VendorDashboardController extends Controller
         ]);
     }
 
-    public function storeProduct(Request $request): RedirectResponse
+    public function storeProduct(Request $request, MarketplaceEmailService $emails): RedirectResponse
     {
         $store = auth()->user()->vendorStore;
 
@@ -99,15 +104,18 @@ class VendorDashboardController extends Controller
 
         $data = $this->validateProduct($request);
         $product = $store->products()->create([
-            ...collect($data)->except(['price', 'image_path'])->all(),
+            ...collect($data)->except(['price', 'image', 'image_path'])->all(),
             'slug' => Str::slug($data['name']).'-'.Str::lower(Str::random(4)),
             'price_cents' => (int) round($data['price'] * 100),
+            'discount_percent' => (int) ($data['discount_percent'] ?? 0),
             'is_active' => $request->boolean('is_active'),
         ]);
 
-        if (! empty($data['image_path'])) {
-            $product->images()->create(['path' => $data['image_path'], 'alt_text' => $product->name]);
+        if ($imagePath = $this->productImagePath($request, $data)) {
+            $product->images()->create(['path' => $imagePath, 'alt_text' => $product->name]);
         }
+
+        $emails->productCreated($product);
 
         return redirect()->route('vendor.products.index')->with('status', 'Product created.');
     }
@@ -130,13 +138,14 @@ class VendorDashboardController extends Controller
 
         $data = $this->validateProduct($request);
         $product->update([
-            ...collect($data)->except(['price', 'image_path'])->all(),
+            ...collect($data)->except(['price', 'image', 'image_path'])->all(),
             'price_cents' => (int) round($data['price'] * 100),
+            'discount_percent' => (int) ($data['discount_percent'] ?? 0),
             'is_active' => $request->boolean('is_active'),
         ]);
 
-        if (! empty($data['image_path'])) {
-            $product->images()->updateOrCreate(['sort_order' => 0], ['path' => $data['image_path'], 'alt_text' => $product->name]);
+        if ($imagePath = $this->productImagePath($request, $data)) {
+            $product->images()->updateOrCreate(['sort_order' => 0], ['path' => $imagePath, 'alt_text' => $product->name]);
         }
 
         return redirect()->route('vendor.products.index')->with('status', 'Product updated.');
@@ -201,8 +210,10 @@ class VendorDashboardController extends Controller
             'seo_description' => ['nullable', 'string', 'max:500'],
             'seo_keywords' => ['nullable', 'string', 'max:255'],
             'price' => ['required', 'numeric', 'min:0.01', 'max:999999'],
+            'discount_percent' => ['nullable', 'integer', 'min:0', 'max:95'],
             'stock' => ['required', 'integer', 'min:0', 'max:999999'],
             'is_active' => ['nullable', 'boolean'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'image_path' => ['nullable', 'string', 'max:255'],
         ]);
     }
@@ -210,5 +221,21 @@ class VendorDashboardController extends Controller
     private function authorizeProduct(Product $product): void
     {
         abort_unless($product->vendor_store_id === auth()->user()->vendorStore?->id, 403);
+    }
+
+    private function productImagePath(Request $request, array $data): ?string
+    {
+        return $this->storePublicImage($request, 'image', 'products') ?: ($data['image_path'] ?? null);
+    }
+
+    private function storePublicImage(Request $request, string $field, string $directory): ?string
+    {
+        if (! $request->hasFile($field)) {
+            return null;
+        }
+
+        $path = $request->file($field)->store($directory, 'public');
+
+        return Storage::disk('public')->url($path);
     }
 }

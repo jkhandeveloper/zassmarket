@@ -37,6 +37,22 @@ class CustomerDashboardController extends Controller
             $message = 'Added to wishlist.';
         }
 
-        return back()->with('status', $message);
+        $wishlistCount = $user->wishlistItems()->count();
+
+        return back()
+            ->with('status', "{$message} {$this->wishlistCountLabel($wishlistCount)}")
+            ->with('notification', [
+                'message' => $message,
+                'meta' => $this->wishlistCountLabel($wishlistCount),
+                'action_label' => 'View wishlist',
+                'action_url' => route('customer.wishlist'),
+            ]);
+    }
+
+    private function wishlistCountLabel(int $wishlistCount): string
+    {
+        return $wishlistCount === 1
+            ? '1 product in your wishlist.'
+            : "{$wishlistCount} products in your wishlist.";
     }
 }

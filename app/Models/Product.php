@@ -19,6 +19,7 @@ class Product extends Model
         'slug',
         'description',
         'price_cents',
+        'discount_percent',
         'stock',
         'is_active',
         'ai_suggestions',
@@ -32,6 +33,7 @@ class Product extends Model
         return [
             'is_active' => 'boolean',
             'ai_suggestions' => 'array',
+            'discount_percent' => 'integer',
         ];
     }
 
@@ -55,6 +57,11 @@ class Product extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
     public function scopeAvailable(Builder $query): Builder
     {
         return $query
@@ -65,11 +72,37 @@ class Product extends Model
 
     public function formattedPrice(): string
     {
+        return '$'.number_format($this->currentPriceCents() / 100, 2);
+    }
+
+    public function formattedOriginalPrice(): string
+    {
         return '$'.number_format($this->price_cents / 100, 2);
+    }
+
+    public function currentPriceCents(): int
+    {
+        if (! $this->hasDiscount()) {
+            return $this->price_cents;
+        }
+
+        return (int) round($this->price_cents * (100 - $this->discount_percent) / 100);
+    }
+
+    public function hasDiscount(): bool
+    {
+        return (int) $this->discount_percent > 0;
     }
 
     public function primaryImage(): ?ProductImage
     {
         return $this->images->first();
+    }
+
+    public function ratingLabel(): string
+    {
+        $rating = $this->reviews_avg_rating ?? $this->reviews()->avg('rating');
+
+        return $rating ? number_format((float) $rating, 1) : 'No ratings yet';
     }
 }

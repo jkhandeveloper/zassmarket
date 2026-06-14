@@ -29,6 +29,7 @@ class VendorStore extends Model
         'support_email',
         'phone',
         'description',
+        'logo_path',
         'approved_at',
     ];
 
@@ -76,6 +77,11 @@ class VendorStore extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(VendorReview::class);
     }
 
     public function scopeApproved(Builder $query): Builder
@@ -127,5 +133,12 @@ class VendorStore extends Model
         $limit = $this->monthlyOrderLimit();
 
         return $limit === 0 || $this->monthlyOrdersCount() < $limit;
+    }
+
+    public function ratingLabel(): string
+    {
+        $rating = $this->reviews_avg_rating ?? $this->reviews()->avg('rating');
+
+        return $rating ? number_format((float) $rating, 1) : 'No ratings yet';
     }
 }

@@ -78,7 +78,7 @@
             @endif
         </section>
 
-        <form method="POST" action="{{ $action }}" class="zm-card mt-6 grid gap-4 p-6">
+        <form method="POST" action="{{ $action }}" enctype="multipart/form-data" class="zm-card mt-6 grid gap-4 p-6">
             @csrf
             @if ($method !== 'POST')
                 @method($method)
@@ -112,11 +112,24 @@
                 <label class="grid gap-1 text-sm font-bold">Price
                     <input name="price" type="number" min="0.01" step="0.01" value="{{ old('price', $product->exists ? $product->price_cents / 100 : '') }}" required class="rounded-md border-zass-linen focus:border-zass-caramel focus:ring-zass-caramel">
                 </label>
+                <label class="grid gap-1 text-sm font-bold">Discount percent
+                    <input name="discount_percent" type="number" min="0" max="95" value="{{ old('discount_percent', $product->discount_percent ?? 0) }}" class="rounded-md border-zass-linen focus:border-zass-caramel focus:ring-zass-caramel">
+                    <span class="text-xs font-semibold text-zass-bark/60">Use 0 for no discount.</span>
+                </label>
                 <label class="grid gap-1 text-sm font-bold">Stock
                     <input name="stock" type="number" min="0" value="{{ old('stock', $product->stock ?? 0) }}" required class="rounded-md border-zass-linen focus:border-zass-caramel focus:ring-zass-caramel">
                 </label>
             </div>
-            <label class="grid gap-1 text-sm font-bold">Image URL or public path
+            <label class="grid gap-1 text-sm font-bold">Upload product image
+                <input name="image" type="file" accept="image/jpeg,image/png,image/webp" class="rounded-md border border-zass-linen bg-white px-3 py-2 text-sm file:mr-4 file:rounded-md file:border-0 file:bg-zass-bark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white">
+                <span class="text-xs font-semibold text-zass-bark/60">JPG, PNG, or WebP up to 5MB.</span>
+            </label>
+            @if ($product->images->first())
+                <div class="overflow-hidden rounded-md border border-zass-linen bg-zass-linen/30">
+                    <img src="{{ $product->images->first()->path }}" alt="{{ $product->name }}" class="h-40 w-full object-cover">
+                </div>
+            @endif
+            <label class="grid gap-1 text-sm font-bold">Image URL or public path fallback
                 <input name="image_path" value="{{ old('image_path', $product->images->first()?->path) }}" class="rounded-md border-zass-linen focus:border-zass-caramel focus:ring-zass-caramel">
             </label>
             <label class="flex items-center gap-2 text-sm font-bold">
