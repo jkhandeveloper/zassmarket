@@ -40,6 +40,11 @@ return [
         'timeout' => env('AI_SERVICE_TIMEOUT', 5),
     ],
 
+    'ai' => [
+        'url' => env('AI_SERVICE_URL', 'https://ai.zassmarket.zasstech.com'),
+        'timeout' => env('AI_SERVICE_TIMEOUT', 10),
+    ],
+
     'stripe' => [
         'enabled' => env('STRIPE_ENABLED', false),
         'secret' => env('STRIPE_SECRET_KEY'),

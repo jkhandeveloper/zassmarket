@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Ai\ProductImageAnalysisController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CustomerDashboardController;
@@ -14,6 +15,9 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('/products', [HomeController::class, 'products'])->name('products.index');
 Route::get('/products/{product:slug}', [HomeController::class, 'showProduct'])->name('products.show');
 Route::get('/pages/{page:slug}', [HomeController::class, 'page'])->name('pages.show');
+
+Route::get('/test-ai', [ProductImageAnalysisController::class, 'create'])->name('ai.product-image.create');
+Route::post('/test-ai', [ProductImageAnalysisController::class, 'store'])->name('ai.product-image.store');
 
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/{product}', [CartController::class, 'store'])->name('cart.store');
