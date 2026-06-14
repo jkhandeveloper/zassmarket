@@ -38,7 +38,7 @@ jobs:
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
-            sudo chown -R deployer:www-data /var/www/html/zassmarket
-            sudo chmod -R 775 storage bootstrap/cache
-            sudo systemctl reload php8.3-fpm
-            sudo systemctl reload nginx
+            chown -R deployer:www-data /var/www/html/zassmarket
+            chmod -R 775 storage bootstrap/cache
+            systemctl reload php8.3-fpm
+            systemctl reload nginx
