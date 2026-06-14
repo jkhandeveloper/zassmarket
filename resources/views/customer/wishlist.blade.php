@@ -1,7 +1,7 @@
 @extends('market.layout', ['title' => 'Wishlist'])
 
 @section('content')
-    <section class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+    <section class="zm-container py-8">
         <h1 class="text-3xl font-bold">Wishlist</h1>
         <div class="mt-6 space-y-4">
             @forelse ($items as $item)

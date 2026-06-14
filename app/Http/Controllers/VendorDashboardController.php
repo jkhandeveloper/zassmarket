@@ -104,16 +104,14 @@ class VendorDashboardController extends Controller
 
         $data = $this->validateProduct($request);
         $product = $store->products()->create([
-            ...collect($data)->except(['price', 'image', 'image_path'])->all(),
+            ...collect($data)->except(['price', 'image', 'images', 'image_path'])->all(),
             'slug' => Str::slug($data['name']).'-'.Str::lower(Str::random(4)),
             'price_cents' => (int) round($data['price'] * 100),
             'discount_percent' => (int) ($data['discount_percent'] ?? 0),
             'is_active' => $request->boolean('is_active'),
         ]);
 
-        if ($imagePath = $this->productImagePath($request, $data)) {
-            $product->images()->create(['path' => $imagePath, 'alt_text' => $product->name]);
-        }
+        $this->storeProductImages($request, $product, $data);
 
         $emails->productCreated($product);
 
@@ -138,15 +136,13 @@ class VendorDashboardController extends Controller
 
         $data = $this->validateProduct($request);
         $product->update([
-            ...collect($data)->except(['price', 'image', 'image_path'])->all(),
+            ...collect($data)->except(['price', 'image', 'images', 'image_path'])->all(),
             'price_cents' => (int) round($data['price'] * 100),
             'discount_percent' => (int) ($data['discount_percent'] ?? 0),
             'is_active' => $request->boolean('is_active'),
         ]);
 
-        if ($imagePath = $this->productImagePath($request, $data)) {
-            $product->images()->updateOrCreate(['sort_order' => 0], ['path' => $imagePath, 'alt_text' => $product->name]);
-        }
+        $this->storeProductImages($request, $product, $data);
 
         return redirect()->route('vendor.products.index')->with('status', 'Product updated.');
     }
@@ -214,6 +210,8 @@ class VendorDashboardController extends Controller
             'stock' => ['required', 'integer', 'min:0', 'max:999999'],
             'is_active' => ['nullable', 'boolean'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'images' => ['nullable', 'array', 'max:8'],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'image_path' => ['nullable', 'string', 'max:255'],
         ]);
     }
@@ -223,9 +221,35 @@ class VendorDashboardController extends Controller
         abort_unless($product->vendor_store_id === auth()->user()->vendorStore?->id, 403);
     }
 
-    private function productImagePath(Request $request, array $data): ?string
+    private function storeProductImages(Request $request, Product $product, array $data): void
     {
-        return $this->storePublicImage($request, 'image', 'products') ?: ($data['image_path'] ?? null);
+        $sortOrder = ((int) $product->images()->max('sort_order')) + 1;
+
+        if ($request->hasFile('image')) {
+            $product->images()->create([
+                'path' => $this->storePublicImage($request, 'image', 'products'),
+                'alt_text' => $product->name,
+                'sort_order' => $sortOrder++,
+            ]);
+        }
+
+        foreach ($request->file('images', []) as $image) {
+            $path = $image->store('products', 'public');
+
+            $product->images()->create([
+                'path' => Storage::disk('public')->url($path),
+                'alt_text' => $product->name,
+                'sort_order' => $sortOrder++,
+            ]);
+        }
+
+        if (! empty($data['image_path']) && ! $product->images()->where('path', $data['image_path'])->exists()) {
+            $product->images()->create([
+                'path' => $data['image_path'],
+                'alt_text' => $product->name,
+                'sort_order' => $sortOrder,
+            ]);
+        }
     }
 
     private function storePublicImage(Request $request, string $field, string $directory): ?string

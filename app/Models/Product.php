@@ -62,12 +62,18 @@ class Product extends Model
         return $this->hasMany(ProductReview::class);
     }
 
-    public function scopeAvailable(Builder $query): Builder
+    public function scopePublished(Builder $query): Builder
     {
         return $query
             ->where('is_active', true)
-            ->where('stock', '>', 0)
             ->whereHas('vendorStore', fn (Builder $store) => $store->approved());
+    }
+
+    public function scopeAvailable(Builder $query): Builder
+    {
+        return $query
+            ->published()
+            ->where('stock', '>', 0);
     }
 
     public function formattedPrice(): string

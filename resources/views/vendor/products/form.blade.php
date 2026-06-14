@@ -1,7 +1,7 @@
 @extends('market.layout', ['title' => $product->exists ? 'Edit product' : 'New product'])
 
 @section('content')
-    <section class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+    <section class="zm-container py-8">
         <p class="zm-pill">Vendor product studio</p>
         <h1 class="mt-3 text-3xl font-black">{{ $product->exists ? 'Edit product' : 'New product' }}</h1>
 
@@ -117,16 +117,22 @@
                     <span class="text-xs font-semibold text-zass-bark/60">Use 0 for no discount.</span>
                 </label>
                 <label class="grid gap-1 text-sm font-bold">Stock
-                    <input name="stock" type="number" min="0" value="{{ old('stock', $product->stock ?? 0) }}" required class="rounded-md border-zass-linen focus:border-zass-caramel focus:ring-zass-caramel">
+                    <input name="stock" type="number" min="0" value="{{ old('stock', $product->exists ? $product->stock : 1) }}" required class="rounded-md border-zass-linen focus:border-zass-caramel focus:ring-zass-caramel">
                 </label>
             </div>
-            <label class="grid gap-1 text-sm font-bold">Upload product image
+            <label class="grid gap-1 text-sm font-bold">Upload main product image
                 <input name="image" type="file" accept="image/jpeg,image/png,image/webp" class="rounded-md border border-zass-linen bg-white px-3 py-2 text-sm file:mr-4 file:rounded-md file:border-0 file:bg-zass-bark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white">
                 <span class="text-xs font-semibold text-zass-bark/60">JPG, PNG, or WebP up to 5MB.</span>
             </label>
-            @if ($product->images->first())
-                <div class="overflow-hidden rounded-md border border-zass-linen bg-zass-linen/30">
-                    <img src="{{ $product->images->first()->path }}" alt="{{ $product->name }}" class="h-40 w-full object-cover">
+            <label class="grid gap-1 text-sm font-bold">Upload gallery images
+                <input name="images[]" type="file" accept="image/jpeg,image/png,image/webp" multiple class="rounded-md border border-zass-linen bg-white px-3 py-2 text-sm file:mr-4 file:rounded-md file:border-0 file:bg-zass-bark file:px-4 file:py-2 file:text-sm file:font-bold file:text-white">
+                <span class="text-xs font-semibold text-zass-bark/60">Optional. Select multiple JPG, PNG, or WebP files. Each image can be up to 5MB.</span>
+            </label>
+            @if ($product->images->isNotEmpty())
+                <div class="grid gap-3 rounded-md border border-zass-linen bg-zass-linen/30 p-3 sm:grid-cols-2 lg:grid-cols-4">
+                    @foreach ($product->images as $image)
+                        <img src="{{ $image->path }}" alt="{{ $image->alt_text ?? $product->name }}" class="h-36 w-full rounded-md object-cover">
+                    @endforeach
                 </div>
             @endif
             <label class="grid gap-1 text-sm font-bold">Image URL or public path fallback

@@ -1,7 +1,7 @@
 @extends('market.layout', ['title' => 'Cart'])
 
 @section('content')
-    <section class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+    <section class="zm-container py-10">
         <p class="zm-pill">Checkout bag</p>
         <h1 class="mt-3 text-3xl font-black">Cart</h1>
         <div class="mt-6 space-y-4">

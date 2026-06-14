@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Page;
 use App\Models\Product;
+use App\Models\ProductImage;
 use App\Models\SubscriptionPlan;
 use App\Services\AiSuggestionService;
 use Illuminate\Http\Request;
@@ -15,7 +16,21 @@ class HomeController extends Controller
     public function __invoke(AiSuggestionService $ai): View
     {
         return view('market.home', [
-            'featuredProducts' => Product::available()->with(['vendorStore', 'images'])->withAvg('reviews', 'rating')->withCount('reviews')->latest()->take(8)->get(),
+            'heroImages' => ProductImage::query()
+                ->where('show_on_homepage_hero', true)
+                ->whereHas('product', fn ($query) => $query->published())
+                ->with(['product.vendorStore', 'product.category'])
+                ->orderBy('sort_order')
+                ->latest()
+                ->take(8)
+                ->get(),
+            'featuredProducts' => Product::available()
+                ->with(['vendorStore', 'images', 'category'])
+                ->withAvg('reviews', 'rating')
+                ->withCount('reviews')
+                ->latest()
+                ->take(8)
+                ->get(),
             'recommendedProducts' => $ai->recommendations(auth()->user(), ['source' => 'home'], 4),
             'categories' => Category::withCount('products')->take(6)->get(),
             'plans' => SubscriptionPlan::where('is_active', true)->orderBy('price_cents')->get(),
@@ -24,7 +39,7 @@ class HomeController extends Controller
 
     public function products(Request $request): View
     {
-        $products = Product::available()
+        $products = Product::published()
             ->with(['vendorStore', 'images', 'category'])
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
@@ -47,7 +62,7 @@ class HomeController extends Controller
         $product->load(['vendorStore', 'images', 'category']);
         $product->loadAvg('reviews', 'rating')->loadCount('reviews');
 
-        $sameNameProducts = Product::available()
+        $sameNameProducts = Product::published()
             ->with(['vendorStore', 'images', 'category'])
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
@@ -57,31 +72,41 @@ class HomeController extends Controller
             ->take(4)
             ->get();
 
-        $sameCategoryProducts = Product::available()
+        $sameNameProductIds = $sameNameProducts->pluck('id');
+
+        $sameCategoryProducts = Product::published()
             ->with(['vendorStore', 'images', 'category'])
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')
             ->whereKeyNot($product->id)
+            ->whereNotIn('id', $sameNameProductIds)
             ->where('category_id', $product->category_id)
             ->latest()
             ->take(4)
             ->get();
+
+        $recommendedProducts = $ai->recommendations(auth()->user(), [
+            'source' => 'product_detail',
+            'exclude_product_id' => $product->id,
+            'category_id' => $product->category_id,
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'category' => $product->category?->name,
+            ],
+        ], 8)
+            ->reject(fn (Product $recommendedProduct) => $recommendedProduct->is($product))
+            ->reject(fn (Product $recommendedProduct) => $sameNameProductIds->contains($recommendedProduct->id))
+            ->reject(fn (Product $recommendedProduct) => $sameCategoryProducts->pluck('id')->contains($recommendedProduct->id))
+            ->take(4)
+            ->values();
 
         return view('market.products.show', [
             'product' => $product,
             'productReviews' => $product->reviews()->with('user')->latest()->take(10)->get(),
             'sameNameProducts' => $sameNameProducts,
             'sameCategoryProducts' => $sameCategoryProducts,
-            'recommendedProducts' => $ai->recommendations(auth()->user(), [
-                'source' => 'product_detail',
-                'exclude_product_id' => $product->id,
-                'category_id' => $product->category_id,
-                'product' => [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'category' => $product->category?->name,
-                ],
-            ], 4),
+            'recommendedProducts' => $recommendedProducts,
         ]);
     }
 

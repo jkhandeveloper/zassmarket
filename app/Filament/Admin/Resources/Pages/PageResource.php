@@ -9,7 +9,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
@@ -34,7 +34,7 @@ class PageResource extends Resource
         return $schema->components([
             TextInput::make('title')->required()->maxLength(255)->live(onBlur: true)->afterStateUpdated(fn ($state, $set) => $set('slug', Str::slug($state))),
             TextInput::make('slug')->required()->maxLength(255)->unique(ignoreRecord: true),
-            Textarea::make('body')->required()->rows(10)->columnSpanFull(),
+            RichEditor::make('body')->required()->columnSpanFull(),
             Toggle::make('is_published')->default(true),
         ]);
     }

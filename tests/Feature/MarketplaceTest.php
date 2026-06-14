@@ -45,6 +45,17 @@ class MarketplaceTest extends TestCase
         $this->assertSame(3, $product->fresh()->stock);
     }
 
+    public function test_public_product_list_shows_out_of_stock_active_products(): void
+    {
+        $product = $this->approvedProduct(stock: 0);
+
+        $this
+            ->get(route('products.index'))
+            ->assertOk()
+            ->assertSee($product->name)
+            ->assertSee('Out of stock');
+    }
+
     public function test_pending_vendor_can_view_status_but_cannot_manage_products(): void
     {
         $this->seedRoles();

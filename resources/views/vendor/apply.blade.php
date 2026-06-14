@@ -1,7 +1,7 @@
 @extends('market.layout', ['title' => 'Apply as vendor'])
 
 @section('content')
-    <section class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+    <section class="zm-container py-8">
         <h1 class="text-3xl font-bold">Vendor application</h1>
         @if ($store)
             <div class="mt-6 rounded-lg border border-zinc-200 bg-white p-6">

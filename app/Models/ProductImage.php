@@ -7,7 +7,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProductImage extends Model
 {
-    protected $fillable = ['product_id', 'path', 'alt_text', 'sort_order'];
+    protected $fillable = ['product_id', 'path', 'alt_text', 'sort_order', 'show_on_homepage_hero'];
+
+    protected function casts(): array
+    {
+        return [
+            'show_on_homepage_hero' => 'boolean',
+        ];
+    }
 
     public function product(): BelongsTo
     {

@@ -31,15 +31,19 @@
                     <span class="ml-1 text-xs font-black text-zass-caramel">{{ $product->discount_percent }}% off</span>
                 @endif
             </span>
-            <form method="POST" action="{{ route('cart.store', $product) }}">
-                @csrf
-                <button class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-zass-bark text-white shadow-sm transition hover:bg-zass-ink" title="Add to cart">
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14" />
-                        <path d="M12 5v14" />
-                    </svg>
-                </button>
-            </form>
+            @if ($product->stock > 0)
+                <form method="POST" action="{{ route('cart.store', $product) }}">
+                    @csrf
+                    <button class="inline-flex h-10 w-10 items-center justify-center rounded-md bg-zass-bark text-white shadow-sm transition hover:bg-zass-ink" title="Add to cart">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14" />
+                            <path d="M12 5v14" />
+                        </svg>
+                    </button>
+                </form>
+            @else
+                <span class="rounded-md bg-zass-linen px-3 py-2 text-xs font-black text-zass-bark/70">Out of stock</span>
+            @endif
         </div>
     </div>
 </article>

@@ -1,7 +1,7 @@
 @extends('market.layout', ['title' => 'Thank you'])
 
 @section('content')
-    <section class="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6 lg:px-8">
+    <section class="zm-container py-16 text-center">
         <h1 class="text-3xl font-bold">Thanks for your order.</h1>
         <p class="mt-3 text-zinc-600">We created {{ count($orderNumbers) }} vendor order{{ count($orderNumbers) === 1 ? '' : 's' }}.</p>
         @if ($orderNumbers)

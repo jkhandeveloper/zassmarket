@@ -14,6 +14,7 @@
     <body class="min-h-screen text-zass-ink antialiased">
         @php
             $cartCount = $cartCount ?? 0;
+            $footerPages = $footerPages ?? collect();
             $notification = session('notification');
             $statusMessage = is_string(session('status')) ? session('status') : null;
         @endphp
@@ -104,8 +105,17 @@
                     <p class="text-lg font-black">ZassMarket</p>
                     <p class="mt-2 max-w-md text-sm text-zass-linen">A warm, modern marketplace for approved vendors, curated catalogs, and smooth checkout.</p>
                 </div>
-                <a href="{{ route('products.index') }}" class="text-sm font-semibold text-zass-linen hover:text-white">Shop products</a>
-                <a href="{{ route('vendor.apply') }}" class="text-sm font-semibold text-zass-linen hover:text-white">Sell on ZassMarket</a>
+                <nav class="grid gap-2 text-sm font-semibold text-zass-linen">
+                    <a href="{{ route('products.index') }}" class="hover:text-white">Shop products</a>
+                    <a href="{{ route('vendor.apply') }}" class="hover:text-white">Sell on ZassMarket</a>
+                </nav>
+                @if ($footerPages->isNotEmpty())
+                    <nav class="grid gap-2 text-sm font-semibold text-zass-linen">
+                        @foreach ($footerPages as $page)
+                            <a href="{{ route('pages.show', $page) }}" class="hover:text-white">{{ $page->title }}</a>
+                        @endforeach
+                    </nav>
+                @endif
             </div>
         </footer>
     </body>

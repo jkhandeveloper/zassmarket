@@ -14,7 +14,7 @@ class VendorStoreController extends Controller
 
         $vendorStore->loadAvg('reviews', 'rating')->loadCount('reviews');
 
-        $products = Product::available()
+        $products = Product::published()
             ->with(['vendorStore', 'images', 'category'])
             ->withAvg('reviews', 'rating')
             ->withCount('reviews')

@@ -2,7 +2,7 @@
 
 @section('content')
     @php
-        $slides = $featuredProducts->take(4)->values();
+        $slides = $heroImages->values();
         $stats = [
             ['label' => 'approved vendors', 'value' => '30+'],
             ['label' => 'curated categories', 'value' => $categories->count().'+'],
@@ -10,100 +10,106 @@
         ];
     @endphp
 
-    <section class="relative">
-        <div class="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-white/80 to-transparent"></div>
-        <div class="zm-container grid gap-10 py-10 lg:grid-cols-[1fr_520px] lg:py-16">
-            <div class="flex flex-col justify-center">
-                <div class="zm-pill animate-fade-up">
-                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2v20" />
-                        <path d="m17 5-5-3-5 3" />
-                        <path d="m17 19-5 3-5-3" />
-                    </svg>
-                    Multi-vendor SaaS marketplace
-                </div>
-                <h1 class="mt-5 max-w-3xl text-4xl font-black tracking-tight text-zass-ink sm:text-5xl lg:text-6xl">
-                    Shop warm essentials from approved independent sellers.
-                </h1>
-                <p class="mt-5 max-w-2xl text-lg leading-8 text-zass-bark/80">
-                    Discover crafted goods, compare vendors, save favorites, and check out as a guest or registered customer in a marketplace built for real ecommerce workflows.
-                </p>
-                <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-                    <a href="{{ route('products.index') }}" class="zm-btn-primary">
-                        <svg class="zm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8" />
-                            <path d="m21 21-4.3-4.3" />
-                        </svg>
-                        Browse products
-                    </a>
-                    <a href="{{ route('vendor.apply') }}" class="zm-btn-secondary">
-                        <svg class="zm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M3 21h18" />
-                            <path d="M5 21V7l8-4v18" />
-                            <path d="M19 21V11l-6-4" />
-                        </svg>
-                        Become a vendor
-                    </a>
-                </div>
-                <div class="mt-10 grid max-w-xl grid-cols-3 gap-3">
-                    @foreach ($stats as $stat)
-                        <div class="rounded-lg border border-zass-linen/70 bg-white/70 p-4 shadow-sm backdrop-blur">
-                            <p class="text-2xl font-black text-zass-bark">{{ $stat['value'] }}</p>
-                            <p class="mt-1 text-xs font-bold uppercase tracking-wide text-zass-sage">{{ $stat['label'] }}</p>
+    <section
+        x-data="{ active: 0, total: {{ max($slides->count(), 1) }} }"
+        x-init="setInterval(() => active = (active + 1) % total, 6000)"
+        class="relative min-h-[min(720px,calc(84svh-73px))] overflow-hidden bg-zass-ink text-white"
+    >
+        @forelse ($slides as $index => $heroImage)
+            @php
+                $product = $heroImage->product;
+                $bundleItems = $featuredProducts
+                    ->reject(fn ($bundleProduct) => $bundleProduct->id === $product->id)
+                    ->take(2)
+                    ->values();
+            @endphp
+            <article
+                x-show="active === {{ $index }}"
+                x-transition.opacity.duration.700ms
+                class="absolute inset-0"
+            >
+                <img src="{{ $heroImage->path }}" alt="{{ $heroImage->alt_text ?? $product->name }}" class="absolute inset-0 h-full w-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-r from-zass-ink/90 via-zass-ink/58 to-zass-ink/10"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-zass-ink/88 via-transparent to-zass-ink/20"></div>
+
+                <div class="relative z-10 flex min-h-[min(720px,calc(84svh-73px))] flex-col justify-end px-[clamp(1rem,4vw,4rem)] py-8 sm:py-12">
+                    <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
+                        <div class="max-w-5xl">
+                            <div class="inline-flex flex-wrap items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-black uppercase tracking-wide text-zass-linen backdrop-blur">
+                                <span>{{ $product->category?->name ?? 'Marketplace pick' }}</span>
+                                <span class="h-1 w-1 rounded-full bg-zass-linen"></span>
+                                <span>{{ $product->vendorStore->name }}</span>
+                            </div>
+                            <h1 class="mt-5 text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">{{ $product->name }}</h1>
+                            <p class="mt-5 max-w-3xl text-base leading-8 text-zass-linen sm:text-lg">{{ str($product->description)->limit(190) }}</p>
+                            <div class="mt-7 flex flex-wrap items-center gap-3">
+                                <a href="{{ route('products.show', $product) }}" class="inline-flex rounded-md bg-white px-5 py-3 text-sm font-black text-zass-bark shadow-soft transition hover:bg-zass-linen">Shop this slide</a>
+                                <a href="{{ route('vendors.show', $product->vendorStore->slug) }}" class="inline-flex rounded-md border border-white/30 bg-white/10 px-5 py-3 text-sm font-black text-white backdrop-blur transition hover:bg-white/20">View vendor</a>
+                                <span class="rounded-full bg-zass-caramel px-4 py-2 text-sm font-black text-zass-ink">{{ $product->formattedPrice() }}</span>
+                            </div>
                         </div>
+
+                        <aside class="rounded-lg border border-white/15 bg-white/10 p-5 shadow-lift backdrop-blur-xl">
+                            <div class="flex items-center gap-3">
+                                <div class="grid h-14 w-14 place-items-center overflow-hidden rounded-md bg-white/15">
+                                    @if ($product->vendorStore->logo_path)
+                                        <img src="{{ $product->vendorStore->logo_path }}" alt="{{ $product->vendorStore->name }} logo" class="h-full w-full object-cover">
+                                    @else
+                                        <span class="text-xl font-black">{{ str($product->vendorStore->name)->substr(0, 1)->upper() }}</span>
+                                    @endif
+                                </div>
+                                <div>
+                                    <p class="text-xs font-black uppercase tracking-wide text-zass-linen">Featured vendor</p>
+                                    <p class="text-lg font-black">{{ $product->vendorStore->name }}</p>
+                                </div>
+                            </div>
+                            <p class="mt-4 line-clamp-3 text-sm leading-6 text-zass-linen">{{ $product->vendorStore->description ?: 'Approved ZassMarket seller with fresh catalog picks.' }}</p>
+
+                            <div class="mt-5 border-t border-white/15 pt-5">
+                                <p class="text-xs font-black uppercase tracking-wide text-zass-linen">Bundle idea</p>
+                                <div class="mt-3 space-y-3">
+                                    <a href="{{ route('products.show', $product) }}" class="flex items-center justify-between gap-4 text-sm font-bold">
+                                        <span>{{ $product->name }}</span>
+                                        <span>{{ $product->formattedPrice() }}</span>
+                                    </a>
+                                    @foreach ($bundleItems as $bundleProduct)
+                                        <a href="{{ route('products.show', $bundleProduct) }}" class="flex items-center justify-between gap-4 text-sm font-bold text-zass-linen hover:text-white">
+                                            <span>{{ $bundleProduct->name }}</span>
+                                            <span>{{ $bundleProduct->formattedPrice() }}</span>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </article>
+        @empty
+            <div class="grid min-h-[min(720px,calc(84svh-73px))] place-items-center px-6 text-center">
+                <div>
+                    <p class="text-sm font-black uppercase tracking-wide text-zass-linen">Homepage slider</p>
+                    <h1 class="mt-3 text-4xl font-black">Select product images for the homepage hero in admin.</h1>
+                </div>
+            </div>
+        @endforelse
+
+        @if ($slides->isNotEmpty())
+            <div class="absolute bottom-5 left-0 right-0 z-20 flex flex-col gap-4 px-[clamp(1rem,4vw,4rem)] sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex gap-2">
+                    @foreach ($slides as $index => $product)
+                        <button @click="active = {{ $index }}" class="h-2.5 rounded-full transition-all" :class="active === {{ $index }} ? 'w-12 bg-white' : 'w-2.5 bg-white/45'" title="Show slide {{ $index + 1 }}"></button>
                     @endforeach
                 </div>
-            </div>
-
-            <div
-                x-data="{ active: 0, total: {{ max($slides->count(), 1) }} }"
-                x-init="setInterval(() => active = (active + 1) % total, 4500)"
-                class="relative min-h-[520px]"
-            >
-                <div class="absolute right-4 top-4 z-20 rounded-full bg-white/85 px-4 py-2 text-xs font-black uppercase tracking-wide text-zass-bark shadow-soft backdrop-blur">
-                    New season picks
-                </div>
-                <div class="relative h-full overflow-hidden rounded-lg border border-zass-linen bg-zass-ink shadow-lift">
-                    @forelse ($slides as $index => $product)
-                        <a
-                            href="{{ route('products.show', $product) }}"
-                            x-show="active === {{ $index }}"
-                            x-transition.opacity.duration.500ms
-                            class="absolute inset-0"
-                        >
-                            @if ($product->images->first())
-                                <img src="{{ $product->images->first()->path }}" alt="{{ $product->name }}" class="h-full w-full object-cover opacity-90">
-                            @else
-                                <div class="h-full w-full bg-zass-stone"></div>
-                            @endif
-                            <span class="absolute inset-0 bg-gradient-to-t from-zass-ink via-zass-ink/25 to-transparent"></span>
-                            <span class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                                <span class="block text-sm font-bold text-zass-linen">{{ $product->vendorStore->name }}</span>
-                                <span class="mt-2 block text-3xl font-black">{{ $product->name }}</span>
-                                <span class="mt-3 inline-flex rounded-full bg-white px-4 py-2 text-sm font-black text-zass-bark">{{ $product->formattedPrice() }}</span>
-                            </span>
-                        </a>
-                    @empty
-                        <div class="absolute inset-0 grid place-items-center text-zass-linen">Add products to power the homepage slider.</div>
-                    @endforelse
-                </div>
-                <div class="absolute -bottom-5 left-8 right-8 z-20 flex items-center justify-between rounded-lg border border-zass-linen bg-white/90 p-3 shadow-soft backdrop-blur">
-                    <div class="flex gap-2">
-                        @foreach ($slides as $index => $product)
-                            <button @click="active = {{ $index }}" class="h-2.5 rounded-full transition-all" :class="active === {{ $index }} ? 'w-9 bg-zass-bark' : 'w-2.5 bg-zass-stone/70'" title="Show slide {{ $index + 1 }}"></button>
-                        @endforeach
-                    </div>
-                    <div class="flex gap-2">
-                        <button @click="active = (active - 1 + total) % total" class="grid h-9 w-9 place-items-center rounded-md bg-zass-cream text-zass-bark transition hover:bg-zass-linen" title="Previous slide">
-                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
-                        </button>
-                        <button @click="active = (active + 1) % total" class="grid h-9 w-9 place-items-center rounded-md bg-zass-bark text-white transition hover:bg-zass-ink" title="Next slide">
-                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6" /></svg>
-                        </button>
-                    </div>
+                <div class="flex gap-2">
+                    <button @click="active = (active - 1 + total) % total" class="grid h-11 w-11 place-items-center rounded-md bg-white/15 text-white backdrop-blur transition hover:bg-white/25" title="Previous slide">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6" /></svg>
+                    </button>
+                    <button @click="active = (active + 1) % total" class="grid h-11 w-11 place-items-center rounded-md bg-white text-zass-bark transition hover:bg-zass-linen" title="Next slide">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6" /></svg>
+                    </button>
                 </div>
             </div>
-        </div>
+        @endif
     </section>
 
     <section class="zm-container py-10">

@@ -1,7 +1,7 @@
 @extends('market.layout', ['title' => 'Checkout'])
 
 @section('content')
-    <section class="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_380px] lg:px-8">
+    <section class="zm-container grid gap-8 py-10 lg:grid-cols-[1fr_380px]">
         <form method="POST" action="{{ route('checkout.store') }}" class="zm-card p-6 sm:p-8">
             @csrf
             <p class="zm-pill">Secure order</p>

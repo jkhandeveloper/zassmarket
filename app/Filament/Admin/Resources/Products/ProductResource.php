@@ -9,6 +9,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -44,6 +45,26 @@ class ProductResource extends Resource
             TextInput::make('seo_title')->maxLength(255),
             Textarea::make('seo_description')->rows(3)->columnSpanFull(),
             TextInput::make('seo_keywords')->maxLength(255),
+            Repeater::make('images')
+                ->relationship()
+                ->schema([
+                    TextInput::make('path')
+                        ->label('Image URL or public path')
+                        ->required()
+                        ->maxLength(255),
+                    TextInput::make('alt_text')
+                        ->label('Alt text')
+                        ->maxLength(255),
+                    TextInput::make('sort_order')
+                        ->numeric()
+                        ->default(0),
+                    Toggle::make('show_on_homepage_hero')
+                        ->label('Show in homepage hero')
+                        ->helperText('Only selected images appear in the homepage hero slider.'),
+                ])
+                ->orderColumn('sort_order')
+                ->columns(2)
+                ->columnSpanFull(),
         ]);
     }
 
