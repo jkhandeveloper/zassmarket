@@ -18,8 +18,10 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class ProductResource extends Resource
@@ -72,6 +74,11 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
+                ImageColumn::make('primary_image')
+                    ->label('Image')
+                    ->getStateUsing(fn (Product $record): ?string => $record->images->first()?->path)
+                    ->square()
+                    ->checkFileExistence(false),
                 TextColumn::make('name')->searchable()->sortable(),
                 TextColumn::make('vendorStore.name')->label('Vendor')->sortable(),
                 TextColumn::make('category.name')->label('Category'),
@@ -83,6 +90,11 @@ class ProductResource extends Resource
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()])
             ->toolbarActions([BulkActionGroup::make([DeleteBulkAction::make()])]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with('images');
     }
 
     public static function getPages(): array

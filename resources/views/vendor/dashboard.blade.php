@@ -48,7 +48,13 @@
                     <h2 class="font-semibold">Latest products</h2>
                     <div class="mt-4 space-y-3">
                         @forelse ($products as $product)
-                            <a href="{{ route('vendor.products.edit', $product) }}" class="block border-b border-zinc-100 pb-3 text-sm last:border-0">{{ $product->name }}</a>
+                            <a href="{{ route('vendor.products.edit', $product) }}" class="flex items-center gap-3 border-b border-zinc-100 pb-3 text-sm last:border-0">
+                                @include('market.partials.product-thumb', ['product' => $product, 'size' => 'sm'])
+                                <span class="min-w-0">
+                                    <span class="block truncate font-semibold text-zass-ink">{{ $product->name }}</span>
+                                    <span class="text-zinc-500">{{ $product->formattedPrice() }}</span>
+                                </span>
+                            </a>
                         @empty
                             <p class="text-sm text-zinc-600">No products yet.</p>
                         @endforelse

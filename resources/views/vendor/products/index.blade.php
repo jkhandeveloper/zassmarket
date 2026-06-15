@@ -12,9 +12,12 @@
         <div class="mt-6 overflow-hidden rounded-lg border border-zinc-200 bg-white">
             @forelse ($products as $product)
                 <div class="flex items-center justify-between border-b border-zinc-100 p-4 last:border-0">
-                    <div>
-                        <p class="font-semibold">{{ $product->name }}</p>
-                        <p class="text-sm text-zinc-600">{{ $product->category?->name ?? 'Uncategorized' }} - {{ $product->formattedPrice() }}</p>
+                    <div class="flex min-w-0 items-center gap-3">
+                        @include('market.partials.product-thumb', ['product' => $product, 'size' => 'sm'])
+                        <div class="min-w-0">
+                            <p class="truncate font-semibold">{{ $product->name }}</p>
+                            <p class="text-sm text-zinc-600">{{ $product->category?->name ?? 'Uncategorized' }} - {{ $product->formattedPrice() }}</p>
+                        </div>
                     </div>
                     <a href="{{ route('vendor.products.edit', $product) }}" class="text-sm font-semibold">Edit</a>
                 </div>

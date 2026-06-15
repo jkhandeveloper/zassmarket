@@ -57,8 +57,14 @@
             <h2 class="font-black">Order summary</h2>
             <div class="mt-4 space-y-3">
                 @foreach ($items as $item)
-                    <div class="flex justify-between gap-4 text-sm">
-                        <span>{{ $item['product']->name }} x {{ $item['quantity'] }}</span>
+                    <div class="flex items-center justify-between gap-4 text-sm">
+                        <span class="flex min-w-0 items-center gap-3">
+                            @include('market.partials.product-thumb', ['product' => $item['product'], 'size' => 'sm'])
+                            <span class="min-w-0">
+                                <span class="block truncate font-bold">{{ $item['product']->name }}</span>
+                                <span class="text-zass-bark/65">Qty {{ $item['quantity'] }}</span>
+                            </span>
+                        </span>
                         <span>${{ number_format($item['subtotal_cents'] / 100, 2) }}</span>
                     </div>
                 @endforeach

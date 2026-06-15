@@ -69,12 +69,18 @@
                                 <p class="text-xs font-black uppercase tracking-wide text-zass-linen">Bundle idea</p>
                                 <div class="mt-3 space-y-3">
                                     <a href="{{ route('products.show', $product) }}" class="flex items-center justify-between gap-4 text-sm font-bold">
-                                        <span>{{ $product->name }}</span>
+                                        <span class="flex min-w-0 items-center gap-3">
+                                            @include('market.partials.product-thumb', ['name' => $product->name, 'imagePath' => $heroImage->path, 'imageAlt' => $heroImage->alt_text ?? $product->name, 'size' => 'sm'])
+                                            <span class="min-w-0 truncate">{{ $product->name }}</span>
+                                        </span>
                                         <span>{{ $product->formattedPrice() }}</span>
                                     </a>
                                     @foreach ($bundleItems as $bundleProduct)
                                         <a href="{{ route('products.show', $bundleProduct) }}" class="flex items-center justify-between gap-4 text-sm font-bold text-zass-linen hover:text-white">
-                                            <span>{{ $bundleProduct->name }}</span>
+                                            <span class="flex min-w-0 items-center gap-3">
+                                                @include('market.partials.product-thumb', ['product' => $bundleProduct, 'size' => 'sm'])
+                                                <span class="min-w-0 truncate">{{ $bundleProduct->name }}</span>
+                                            </span>
                                             <span>{{ $bundleProduct->formattedPrice() }}</span>
                                         </a>
                                     @endforeach

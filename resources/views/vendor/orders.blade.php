@@ -13,9 +13,15 @@
                         </div>
                         <p class="text-lg font-bold">{{ $order->formattedTotal() }}</p>
                     </div>
-                    <div class="mt-4 border-t border-zinc-100 pt-4 text-sm">
+                    <div class="mt-4 space-y-3 border-t border-zinc-100 pt-4 text-sm">
                         @foreach ($order->items as $item)
-                            <p>{{ $item->product_name }} x {{ $item->quantity }}</p>
+                            <div class="flex items-center gap-3">
+                                @include('market.partials.product-thumb', ['product' => $item->product, 'name' => $item->product_name, 'size' => 'sm'])
+                                <p>
+                                    <span class="font-semibold">{{ $item->product_name }}</span>
+                                    <span class="text-zinc-500">x {{ $item->quantity }}</span>
+                                </p>
+                            </div>
                         @endforeach
                     </div>
                 </article>

@@ -13,14 +13,14 @@ class CustomerDashboardController extends Controller
     {
         return view('customer.dashboard', [
             'orders' => auth()->user()->orders()->with('vendorStore')->latest()->take(10)->get(),
-            'wishlist' => auth()->user()->wishlistItems()->with('product.vendorStore')->latest()->take(10)->get(),
+            'wishlist' => auth()->user()->wishlistItems()->with(['product.vendorStore', 'product.images'])->latest()->take(10)->get(),
         ]);
     }
 
     public function wishlist(): View
     {
         return view('customer.wishlist', [
-            'items' => auth()->user()->wishlistItems()->with('product.vendorStore')->latest()->get(),
+            'items' => auth()->user()->wishlistItems()->with(['product.vendorStore', 'product.images'])->latest()->get(),
         ]);
     }
 

@@ -32,8 +32,12 @@
                 </div>
                 <div class="mt-4 space-y-3">
                     @forelse ($wishlist as $item)
-                        <a href="{{ route('products.show', $item->product) }}" class="block border-b border-zinc-100 pb-3 text-sm last:border-0">
-                            {{ $item->product->name }} <span class="text-zinc-500">by {{ $item->product->vendorStore->name }}</span>
+                        <a href="{{ route('products.show', $item->product) }}" class="flex items-center gap-3 border-b border-zinc-100 pb-3 text-sm last:border-0">
+                            @include('market.partials.product-thumb', ['product' => $item->product, 'size' => 'sm'])
+                            <span class="min-w-0">
+                                <span class="block font-semibold text-zass-ink">{{ $item->product->name }}</span>
+                                <span class="text-zinc-500">by {{ $item->product->vendorStore->name }}</span>
+                            </span>
                         </a>
                     @empty
                         <p class="text-sm text-zinc-600">No wishlist items yet.</p>

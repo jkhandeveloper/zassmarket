@@ -7,14 +7,17 @@
         <div class="mt-6 space-y-4">
             @forelse ($items as $item)
                 <div class="zm-card flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <h2 class="font-black">{{ $item['product']->name }}</h2>
-                        <p class="text-sm font-semibold text-zass-sage">{{ $item['product']->vendorStore->name }} - {{ $item['product']->formattedPrice() }}</p>
-                        @if ($item['product']->hasDiscount())
-                            <p class="mt-1 text-xs font-black text-zass-caramel">
-                                {{ $item['product']->discount_percent }}% off <span class="text-zass-stone line-through">{{ $item['product']->formattedOriginalPrice() }}</span>
-                            </p>
-                        @endif
+                    <div class="flex min-w-0 items-center gap-4">
+                        @include('market.partials.product-thumb', ['product' => $item['product']])
+                        <div class="min-w-0">
+                            <h2 class="truncate font-black">{{ $item['product']->name }}</h2>
+                            <p class="text-sm font-semibold text-zass-sage">{{ $item['product']->vendorStore->name }} - {{ $item['product']->formattedPrice() }}</p>
+                            @if ($item['product']->hasDiscount())
+                                <p class="mt-1 text-xs font-black text-zass-caramel">
+                                    {{ $item['product']->discount_percent }}% off <span class="text-zass-stone line-through">{{ $item['product']->formattedOriginalPrice() }}</span>
+                                </p>
+                            @endif
+                        </div>
                     </div>
                     <div class="flex items-center gap-3">
                         <form method="POST" action="{{ route('cart.update', $item['product']) }}" class="flex items-center gap-2">

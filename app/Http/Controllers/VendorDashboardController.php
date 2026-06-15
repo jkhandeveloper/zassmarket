@@ -24,8 +24,8 @@ class VendorDashboardController extends Controller
 
         return view('vendor.dashboard', [
             'store' => $store,
-            'orders' => $store?->orders()->with('items')->latest()->take(10)->get() ?? collect(),
-            'products' => $store?->products()->latest()->take(10)->get() ?? collect(),
+            'orders' => $store?->orders()->with(['items.product.images'])->latest()->take(10)->get() ?? collect(),
+            'products' => $store?->products()->with('images')->latest()->take(10)->get() ?? collect(),
         ]);
     }
 
@@ -78,7 +78,7 @@ class VendorDashboardController extends Controller
 
         return view('vendor.products.index', [
             'store' => $store,
-            'products' => $store->products()->with('category')->latest()->paginate(12),
+            'products' => $store->products()->with(['category', 'images'])->latest()->paginate(12),
         ]);
     }
 
@@ -183,7 +183,7 @@ class VendorDashboardController extends Controller
         $store = auth()->user()->vendorStore;
 
         return view('vendor.orders', [
-            'orders' => $store->orders()->with('items')->latest()->paginate(15),
+            'orders' => $store->orders()->with(['items.product.images'])->latest()->paginate(15),
         ]);
     }
 
