@@ -1,6 +1,26 @@
 @extends('market.layout', ['title' => 'ZassMarket'])
 
 @section('content')
+    <style>
+        .zm-hero-content-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 1024px) {
+            .zm-hero-content-grid {
+                align-items: end;
+                grid-template-columns: minmax(0, 1fr) 420px;
+            }
+        }
+
+        @media (max-width: 1023px) {
+            .zm-hero-vendor-panel {
+                display: none;
+            }
+        }
+    </style>
+
     @php
         $slides = $heroImages->values();
         $stats = [
@@ -34,7 +54,7 @@
                 <div class="absolute inset-0 bg-gradient-to-t from-zass-ink/88 via-transparent to-zass-ink/20"></div>
 
                 <div class="relative z-10 flex min-h-[min(720px,calc(84svh-73px))] flex-col justify-end px-[clamp(1rem,4vw,4rem)] py-8 sm:py-12" style="min-height: min(720px, calc(84svh - 73px));">
-                    <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
+                    <div class="zm-hero-content-grid">
                         <div class="max-w-5xl">
                             <div class="inline-flex flex-wrap items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-black uppercase tracking-wide text-zass-linen backdrop-blur">
                                 <span>{{ $product->category?->name ?? 'Marketplace pick' }}</span>
@@ -50,7 +70,7 @@
                             </div>
                         </div>
 
-                        <aside class="rounded-lg border border-white/15 bg-white/10 p-5 shadow-lift backdrop-blur-xl">
+                        <aside class="zm-hero-vendor-panel rounded-lg border border-white/15 bg-white/10 p-5 shadow-lift backdrop-blur-xl">
                             <div class="flex items-center gap-3">
                                 <div class="grid h-14 w-14 place-items-center overflow-hidden rounded-md bg-white/15">
                                     @if ($product->vendorStore->logo_path)
