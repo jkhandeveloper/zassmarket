@@ -14,6 +14,7 @@
         x-data="{ active: 0, total: {{ max($slides->count(), 1) }} }"
         x-init="setInterval(() => active = (active + 1) % total, 6000)"
         class="relative min-h-[min(720px,calc(84svh-73px))] overflow-hidden bg-zass-ink text-white"
+        style="min-height: min(720px, calc(84svh - 73px));"
     >
         @forelse ($slides as $index => $heroImage)
             @php
@@ -32,7 +33,7 @@
                 <div class="absolute inset-0 bg-gradient-to-r from-zass-ink/90 via-zass-ink/58 to-zass-ink/10"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-zass-ink/88 via-transparent to-zass-ink/20"></div>
 
-                <div class="relative z-10 flex min-h-[min(720px,calc(84svh-73px))] flex-col justify-end px-[clamp(1rem,4vw,4rem)] py-8 sm:py-12">
+                <div class="relative z-10 flex min-h-[min(720px,calc(84svh-73px))] flex-col justify-end px-[clamp(1rem,4vw,4rem)] py-8 sm:py-12" style="min-height: min(720px, calc(84svh - 73px));">
                     <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
                         <div class="max-w-5xl">
                             <div class="inline-flex flex-wrap items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-black uppercase tracking-wide text-zass-linen backdrop-blur">
@@ -91,7 +92,7 @@
                 </div>
             </article>
         @empty
-            <div class="grid min-h-[min(720px,calc(84svh-73px))] place-items-center px-6 text-center">
+            <div class="grid min-h-[min(720px,calc(84svh-73px))] place-items-center px-6 text-center" style="min-height: min(720px, calc(84svh - 73px));">
                 <div>
                     <p class="text-sm font-black uppercase tracking-wide text-zass-linen">Homepage slider</p>
                     <h1 class="mt-3 text-4xl font-black">Select product images for the homepage hero in admin.</h1>
